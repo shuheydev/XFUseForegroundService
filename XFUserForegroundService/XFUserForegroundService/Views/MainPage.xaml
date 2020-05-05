@@ -9,7 +9,7 @@
 
     <StackLayout x:Name="stackLayout">
         <Button Clicked="Notify_Clicked" Text="Notify" />
-        <Button Text="Start foreground service" />
+        <Button Text="Start foreground service" Clicked="Button_Clicked"/>
         <Button Text="Stop foreground service" />
     </StackLayout>
 

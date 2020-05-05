@@ -11,6 +11,7 @@ using XFUserForegroundService.Droid.Services;
 using Xamarin.Forms;
 using Android.Support.V4.App;
 using XFUserForegroundService.Services;
+using Shiny;
 
 namespace XFUserForegroundService.Droid
 {
@@ -29,19 +30,29 @@ namespace XFUserForegroundService.Droid
             LoadApplication(new App());
 
             CreateNotificationFromIntent(Intent);
+
+            this.ShinyOnCreate();
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
+            AndroidShinyHost.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
+
         protected override void OnNewIntent(Intent intent)
         {
             base.OnNewIntent(intent);
+
             CreateNotificationFromIntent(intent);
+
+            this.ShinyOnNewIntent(intent);
         }
+
+        #region Notification
         private void CreateNotificationFromIntent(Intent intent)
         {
             if(intent?.Extras!=null)
@@ -51,5 +62,8 @@ namespace XFUserForegroundService.Droid
                 DependencyService.Get<INotificationManager>().ReceiveNotification(title, message);
             }
         }
+        #endregion
+
+
     }
 }
