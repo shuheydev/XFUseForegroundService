@@ -9,8 +9,9 @@
 
     <StackLayout x:Name="stackLayout">
         <Button Clicked="Notify_Clicked" Text="Notify" />
-        <Button Text="Start foreground service" Clicked="Button_Clicked"/>
-        <Button Text="Stop foreground service" />
+        <Button Clicked="StartForegroundService_Clicked" Text="Start foreground service" />
+        <Button Clicked="StopForegroundService_Clicked" Text="Stop foreground service" />
+        <Label Text="{Binding LocationString}" />
     </StackLayout>
 
 </ContentPage>

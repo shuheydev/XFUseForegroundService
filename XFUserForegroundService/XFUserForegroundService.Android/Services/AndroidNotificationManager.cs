@@ -73,17 +73,18 @@ namespace XFUserForegroundService.Droid.Services
                 Title = title,
                 Message = message,
             };
-            NotificationReceived?.Invoke(null,args);
+            NotificationReceived?.Invoke(null, args);
         }
 
+        Random rand = new Random();
         public async Task<int> ScheduleNotification(string title, string message, bool soundOn = true, bool vibrateOn = true)
         {
-            if(!_channelInitialized)
+            if (!_channelInitialized)
             {
                 return -1;
             }
 
-            _messageId++;
+            _messageId = rand.Next(int.MaxValue);
 
             var intent = new Intent(Application.Context, typeof(MainActivity));
             intent.PutExtra(TitleKey, title);

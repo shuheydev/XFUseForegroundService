@@ -12,6 +12,7 @@ using Xamarin.Forms;
 using Android.Support.V4.App;
 using XFUserForegroundService.Services;
 using Shiny;
+using XFUserForegroundService.Messages;
 
 namespace XFUserForegroundService.Droid
 {
@@ -32,6 +33,8 @@ namespace XFUserForegroundService.Droid
             CreateNotificationFromIntent(Intent);
 
             this.ShinyOnCreate();
+
+            WireUpForegroundServiceTask();
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
@@ -55,7 +58,7 @@ namespace XFUserForegroundService.Droid
         #region Notification
         private void CreateNotificationFromIntent(Intent intent)
         {
-            if(intent?.Extras!=null)
+            if (intent?.Extras != null)
             {
                 string title = intent.Extras.GetString(AndroidNotificationManager.TitleKey);
                 string message = intent.Extras.GetString(AndroidNotificationManager.MessageKey);
@@ -64,6 +67,22 @@ namespace XFUserForegroundService.Droid
         }
         #endregion
 
+        #region ForegroundService
+        private void WireUpForegroundServiceTask()
+        {
+            MessagingCenter.Subscribe<StartForegroundServiceMessage>(this, nameof(StartForegroundServiceMessage), message =>
+            {
+                var intent = new Intent(this, typeof(AndroidForegroundService));
+                StartService(intent);
+            });
+
+            MessagingCenter.Subscribe<StopForegroundServiceMessage>(this, nameof(StopForegroundServiceMessage), message =>
+            {
+                var intent = new Intent(this, typeof(AndroidForegroundService));
+                StopService(intent);
+            });
+        }
+        #endregion
 
     }
 }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using XFUserForegroundService.Messages;
 using XFUserForegroundService.Services;
 
 namespace XFUserForegroundService
@@ -17,8 +18,18 @@ namespace XFUserForegroundService
     [DesignTimeVisible(false)]
     public partial class MainPage : ContentPage
     {
+        private string _locationString;
+        public string LocationString
+        {
+            get => _locationString;
+            set
+            {
+                _locationString = value;
+                OnPropertyChanged();
+            }
+        }
+
         INotificationManager _notificationManager;
-        IGpsManager _gpsManager;
 
         public MainPage()
         {
@@ -28,7 +39,18 @@ namespace XFUserForegroundService
             _notificationManager.Initialize("default", "default", "this is channel", 0);
             _notificationManager.NotificationReceived += _notificationManager_NotificationReceived;
 
-            _gpsManager = ShinyHost.Resolve<IGpsManager>();
+            this.BindingContext = this;
+
+            HandleReceiveMessages();
+        }
+
+        private void HandleReceiveMessages()
+        {
+            MessagingCenter.Subscribe<LocationReadMessage>(this, nameof(LocationReadMessage), message =>
+            {
+                var position = message.GpsInfo.Position;
+                LocationString = $"{position.Longitude}, {position.Latitude}";
+            });
         }
 
         private void _notificationManager_NotificationReceived(object sender, EventArgs e)
@@ -53,35 +75,16 @@ namespace XFUserForegroundService
             await _notificationManager.ScheduleNotification($"Test Notification : {DateTimeOffset.Now}", "Test Message");
         }
 
-        private IDisposable _gpsObserver;
-        private async void Button_Clicked(object sender, EventArgs e)
+        private void StartForegroundService_Clicked(object sender, EventArgs e)
         {
-            if (_gpsManager.IsListening)
-                return;
+            var message = new StartForegroundServiceMessage();
+            MessagingCenter.Send(message, nameof(StartForegroundServiceMessage));
+        }
 
-            _gpsObserver?.Dispose();
-
-            _gpsObserver = _gpsManager
-                .WhenReading()
-                .Subscribe(async x =>
-                {
-                    await _notificationManager.ScheduleNotification($"{x.Position.Latitude}, {x.Position.Longitude}", "test");
-                });
-
-            var checkResult=await Permissions.CheckStatusAsync<Permissions.LocationAlways>();
-            if(checkResult!=PermissionStatus.Granted)
-            {
-                var requestResult = await Permissions.RequestAsync<Permissions.LocationAlways>();
-                if (requestResult != PermissionStatus.Granted)
-                    return;
-            }
-
-            var request = new GpsRequest
-            {
-                Interval = TimeSpan.FromSeconds(5),
-                UseBackground = true,
-            };
-            await _gpsManager.StartListener(request);
+        private void StopForegroundService_Clicked(object sender, EventArgs e)
+        {
+            var message = new StopForegroundServiceMessage();
+            MessagingCenter.Send(message, nameof(StopForegroundServiceMessage));
         }
     }
 }
