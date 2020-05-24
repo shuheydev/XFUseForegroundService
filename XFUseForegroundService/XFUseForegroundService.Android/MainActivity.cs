@@ -73,7 +73,16 @@ namespace XFUseForegroundService.Droid
             MessagingCenter.Subscribe<StartForegroundServiceMessage>(this, nameof(StartForegroundServiceMessage), message =>
             {
                 var intent = new Intent(this, typeof(AndroidForegroundService));
-                StartService(intent);
+                //参考:https://docs.microsoft.com/en-us/xamarin/android/app-fundamentals/services/foreground-services
+                if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.O)
+                {
+                    StartForegroundService(intent);
+                }
+                else
+                {
+                    StartService(intent);
+                }
+                //StartService(intent);
             });
 
             MessagingCenter.Subscribe<StopForegroundServiceMessage>(this, nameof(StopForegroundServiceMessage), message =>
